@@ -24,7 +24,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 {
     public GameObject _dummy;
     private Rigidbody rb;
-    private CapsuleCollider _capsuleCollider;
+    public CapsuleCollider _capsuleCollider;
     public CapsuleCollider _defaultCollider;
     public CapsuleCollider _rollingCollider;
     private Animator _animator;
@@ -44,6 +44,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public float speed = 0.10f;
     public float flySpeed = 0.10f;
+    public float rollSpeed;
     //public int nBounces = 3;
     public float _gravity = 9.8f;
 
@@ -237,6 +238,8 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         if (_state == PlayerState.ROLL)
         {
+            var slope = Quaternion.FromToRotation(Vector3.up, _groundNormal);
+
             Vector3 d = new Vector3(direction.x, 0.0f, direction.y).normalized * speed * Time.fixedDeltaTime;
 
             float ratio = (Mathf.Abs(Vector3.Angle(rollForward, d) - 90) / 90);
@@ -245,22 +248,28 @@ public class PlayerKinematicMotor : MonoBehaviour
             if (direction == Vector3.zero)
                 forward = 0;
 
-            _RollDirection = (rollForward * ratio) * speed * Time.fixedDeltaTime * forward;
+            _RollDirection = (rollForward * ratio) * rollSpeed * Time.fixedDeltaTime * forward;
         }
+
+        float t = 5 * Time.deltaTime;
 
         if (_state == PlayerState.FLY && !tabUp)
         {
             if (direction != Vector3.zero)
             {
-                _geometry.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y));
+                _geometry.rotation = Quaternion.Lerp( _geometry.rotation, Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y)), t);
             } 
 
-            _direction = new Vector3(direction.x, 0.0f, direction.y).normalized * flySpeed * Time.fixedDeltaTime;
+            _direction = Vector3.Lerp(_direction, new Vector3(direction.x, 0.0f, direction.y).normalized * flySpeed * Time.fixedDeltaTime, t);
 
-            root.localRotation = Quaternion.Euler(direction.magnitude * 15.0f, 0.0f, 0.0f);
+            root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.Euler(direction.magnitude * 15.0f, 0.0f, 0.0f), t);
         }
 
-        float t = 5 * Time.deltaTime;
+        if (_state == PlayerState.DEFAULT && !_isGrounded && !tabUp)
+        {
+            //we are falling 
+            root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.identity, t);
+        }
 
         if (_state == PlayerState.SHOOTING && tabUp)
         {
@@ -280,6 +289,8 @@ public class PlayerKinematicMotor : MonoBehaviour
                 }
 
                 root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.Euler(direction.magnitude * 60.0f, 0.0f, 0.0f), t);
+
+                root.localPosition = Vector3.Lerp(root.localPosition, new Vector3(0f, 0.4f * direction.magnitude, 0f), t);
             }
         }
 
@@ -291,6 +302,8 @@ public class PlayerKinematicMotor : MonoBehaviour
             }
 
             root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.identity, t * 2);
+
+            root.localPosition = Vector3.Lerp(root.localPosition, Vector3.zero, t);
 
             if (Quaternion.Angle(root.localRotation, Quaternion.identity) < 0.1f)
             {
@@ -337,7 +350,7 @@ public class PlayerKinematicMotor : MonoBehaviour
     public void EndFly()
     {
         //velocity = Vector3.zero;
-        root.localRotation = Quaternion.identity;
+        //root.localRotation = Quaternion.identity;
 
         _ps.Stop();
     }
@@ -390,7 +403,7 @@ public class PlayerKinematicMotor : MonoBehaviour
             var hitSomething = false;
             var closest = new RaycastHit() { distance = Mathf.Infinity };
 
-            foreach (RaycastHit objHit in Physics.CapsuleCastAll(param.top, param.bottom, param.radius, direction, direction.magnitude).Where(c => c.transform != transform))
+            foreach (RaycastHit objHit in Physics.CapsuleCastAll(param.top, param.bottom, param.radius, direction, direction.magnitude).Where(c => (c.transform != transform && !c.collider.isTrigger)))
             {
                 if (objHit.distance < closest.distance)
                 {
@@ -464,6 +477,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
                 _isGrounded = true;
                 velocity = Vector3.zero;
+                root.localRotation = Quaternion.identity;
 
                 if (_lastY - transform.position.y > 0.25f)
                 {
