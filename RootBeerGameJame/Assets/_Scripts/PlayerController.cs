@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _direction;
 
     private bool _roll;
+    private bool _jump;
 
     private void Awake()
     {
@@ -85,10 +86,13 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        if (_input.jump)
-        {
-            _motor.OnJumpInput();
-        }
+        //if (_input.jump)
+        //{
+        //    _motor.OnJumpInput();
+        //}
+        _jump = _input.jump;
+
+        _motor.OnJumpInput(_jump);
     }
 
     private void Move()
