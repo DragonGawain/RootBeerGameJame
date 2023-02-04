@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 _direction;
 
+    private bool _roll;
+
     private void Awake()
     {
         if (_mainCamera == null)
@@ -48,6 +50,7 @@ public class PlayerController : MonoBehaviour
     {
         Jump();
         Move();
+        Roll();
     } 
 
     private void LateUpdate()
@@ -90,14 +93,16 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        _direction = (Quaternion.Euler(0.0f, 0.0f, -_yaw) * _input.move).normalized;
+        _direction = (Quaternion.Euler(0.0f, 0.0f, -_yaw) * _input.move);
 
         _motor.OnMoveInput(_direction);
+    }
 
-        if (_direction != Vector3.zero)
-        {
-            _geometry.rotation = Quaternion.Lerp(_geometry.rotation, Quaternion.LookRotation(new Vector3(_direction.x, 0.0f, _direction.y)), 0.3f);
-        }
+    private void Roll()
+    {
+        _roll = _input.roll;
+
+        _motor.OnRollInput(_roll);
     }
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)

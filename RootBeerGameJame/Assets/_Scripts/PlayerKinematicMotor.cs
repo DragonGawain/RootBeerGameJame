@@ -25,10 +25,17 @@ public class PlayerKinematicMotor : MonoBehaviour
     public GameObject _dummy;
     private Rigidbody rb;
     private CapsuleCollider _capsuleCollider;
+    public CapsuleCollider _defaultCollider;
+    public CapsuleCollider _rollingCollider;
     private Animator _animator;
+    private Transform _geometry;
+
+    public GameObject _defaultCan;
+    public GameObject _rollingCan;
 
     private Vector3 _futurePosition;
-    private Vector3 _direction;
+    public Vector3 _direction;
+    public Vector3 _RollDirection;
     public bool _isGrounded;
 
     public Vector3 _groundNormal;
@@ -47,9 +54,22 @@ public class PlayerKinematicMotor : MonoBehaviour
     public float _jumpTimer = 0.0f;
     public float _jumpDelay = 0.1f;
 
+    public float _movementLockedTimer = 0.0f;
+    public float _movementLockedDelay = 0.1f;
+
+    public float _movementBufferTimer = 0.0f;
+    public float _movementBufferDelay = 0.1f;
+
+    public bool _roll;
+
+    public Vector3 rollForward = Vector3.zero;
+
     public enum PlayerState
     {
         DEFAULT,
+        MOVEMENT_LOCKED,
+        MOVEMENT_BUFFER,
+        ROLL,
     }
 
     public PlayerState _state;
@@ -58,12 +78,19 @@ public class PlayerKinematicMotor : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        _capsuleCollider = GetComponent<CapsuleCollider>();
+        _capsuleCollider = _defaultCollider;
         _isGrounded = false;
         _state = PlayerState.DEFAULT;
         _animator = GetComponent<Animator>();
 
         _jumpTimer = _jumpDelay;
+        _movementLockedTimer = _movementLockedDelay;
+        _movementBufferTimer = _movementBufferDelay;
+
+        _geometry = transform.Find("Geometry");
+
+        _defaultCan.SetActive(true);
+        _rollingCan.SetActive(false);
     }
 
     // Update is called once per frame
@@ -73,14 +100,51 @@ public class PlayerKinematicMotor : MonoBehaviour
         {
             _jumpTimer += Time.fixedDeltaTime;
         }
+
+        if (_state == PlayerState.MOVEMENT_BUFFER) {
+            if (_movementBufferTimer < _movementBufferDelay)
+            {
+                _movementBufferTimer += Time.deltaTime;
+            } else
+            {
+                _state = PlayerState.DEFAULT;
+            }
+        }
+
+        if (_state == PlayerState.MOVEMENT_LOCKED)
+        {
+            if (_movementLockedTimer < _movementLockedDelay)
+            {
+                _movementLockedTimer += Time.deltaTime;
+            }
+            else
+            {
+                _state = PlayerState.MOVEMENT_BUFFER;
+                _movementBufferTimer = 0;
+            }
+        }
     }
 
     private void Update()
     {
+        if (_state == PlayerState.DEFAULT && _roll)
+        {
+            _state = PlayerState.ROLL;
+            StartRoll();
+        }
+        if (_state == PlayerState.ROLL && !_roll)
+        {
+            _state = PlayerState.DEFAULT;
+            EndRoll();
+        }
     }
 
     private void LateUpdate()
     {
+        if (_state == PlayerState.ROLL)
+        {
+            _direction = Vector3.Lerp(_direction, _RollDirection, 0.01f);
+        }
 
         Vector3 outDirection;
 
@@ -96,13 +160,13 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         CheckGounded();
 
-        if (_state == PlayerState.DEFAULT)
+        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.ROLL)
         {
             CollisionCheck(slopedDirection, out outDirection, out _, 3);
             transform.position = transform.position + outDirection;
         }
 
-        if (_state == PlayerState.DEFAULT)
+        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.ROLL)
         {
             CollisionCheck(velocity, out outDirection, out _, 3);
             transform.position = transform.position + outDirection;
@@ -111,9 +175,38 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public void OnMoveInput(Vector3 direction)
     {
-        _direction = new Vector3(direction.x, 0.0f, direction.y) * speed * Time.fixedDeltaTime;
+        if (_state == PlayerState.DEFAULT)
+        {
+            float magnitude = direction.magnitude;
 
-        _animator.SetBool("Walking", direction != Vector3.zero);
+            if (direction != Vector3.zero && magnitude > 0.75f)
+            {
+                _direction = new Vector3(direction.x, 0.0f, direction.y).normalized * speed * Time.fixedDeltaTime;
+                _state = PlayerState.MOVEMENT_LOCKED;
+                _movementLockedTimer = 0.0f;
+
+                _animator.SetTrigger("PlayerWalk");
+
+                _geometry.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y));
+            }
+            else
+            {
+                _direction = Vector3.zero;
+            }
+        }
+
+        if (_state == PlayerState.ROLL)
+        {
+            Vector3 d = new Vector3(direction.x, 0.0f, direction.y).normalized * speed * Time.fixedDeltaTime;
+
+            float ratio = (Mathf.Abs(Vector3.Angle(rollForward, d) - 90) / 90);
+            int forward = Vector3.Distance(rollForward, d) < Vector3.Distance(rollForward, -d) ? 1 : -1;
+
+            if (direction == Vector3.zero)
+                forward = 0;
+
+            _RollDirection = (rollForward * ratio) * speed * Time.fixedDeltaTime * forward;
+        }
     }
 
     public void OnJumpInput()
@@ -126,6 +219,31 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             _jumpTimer = 0.0f;
         }
+    }
+
+    public void OnRollInput(bool roll)
+    {
+        _roll = roll;
+    }
+
+    public void StartRoll()
+    {
+        _capsuleCollider = _rollingCollider;
+
+        _defaultCan.SetActive(false);
+        _rollingCan.SetActive(true);
+
+        rollForward = _geometry.forward;
+    }
+
+    public void EndRoll()
+    {
+        _capsuleCollider = _defaultCollider;
+
+        _defaultCan.SetActive(true);
+        _rollingCan.SetActive(false);
+
+        rollForward = Vector3.zero;
     }
 
     public bool CollisionCheck(Vector3 direction, out Vector3 outDirection, out RaycastHit hit, int nBounces)
@@ -172,8 +290,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         var hitSomething = false;
         var closest = new RaycastHit() { distance = Mathf.Infinity };
-
-
+        
         var slope = Quaternion.FromToRotation(Vector3.up, _groundNormal);
 
         var normalledDirection = slope * _direction;
@@ -234,13 +351,6 @@ public class PlayerKinematicMotor : MonoBehaviour
             _lastY = Mathf.Max(transform.position.y, _lastY);
 
             _animator.SetBool("Airborne", true);
-
-
-            //if (_state == PlayerState.DIVING)
-            //{
-            //    velocity.x = velocity.x * 0.999f;
-            //    velocity.z = velocity.z * 0.999f;
-            //}
         }
 
     }
