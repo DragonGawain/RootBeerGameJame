@@ -29,6 +29,7 @@ public class PlayerKinematicMotor : MonoBehaviour
     public CapsuleCollider _rollingCollider;
     private Animator _animator;
     private Transform _geometry;
+    public Transform root;
 
     public GameObject _defaultCan;
     public GameObject _rollingCan;
@@ -42,6 +43,7 @@ public class PlayerKinematicMotor : MonoBehaviour
     private float _lastY;
 
     public float speed = 0.10f;
+    public float flySpeed = 0.10f;
     //public int nBounces = 3;
     public float _gravity = 9.8f;
 
@@ -49,6 +51,7 @@ public class PlayerKinematicMotor : MonoBehaviour
     public bool canJump = true;
     public Vector3 velocity;
     public float jumpForce;
+    public float jumpForceDown;
     public float _maxSlope = 80;
 
     public float _jumpTimer = 0.0f;
@@ -61,8 +64,14 @@ public class PlayerKinematicMotor : MonoBehaviour
     public float _movementBufferDelay = 0.1f;
 
     public bool _roll;
+    public bool _fly;
 
     public Vector3 rollForward = Vector3.zero;
+
+    public bool tabUp = true;
+    public ParticleSystem _ps;
+
+    public float maxVelocity;
 
     public enum PlayerState
     {
@@ -70,6 +79,9 @@ public class PlayerKinematicMotor : MonoBehaviour
         MOVEMENT_LOCKED,
         MOVEMENT_BUFFER,
         ROLL,
+        FLY,
+        SHOOTING,
+        SHOOTING_BUFFER,
     }
 
     public PlayerState _state;
@@ -96,18 +108,19 @@ public class PlayerKinematicMotor : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (_jumpTimer < _jumpDelay)
-        {
-            _jumpTimer += Time.fixedDeltaTime;
-        }
+        //if (_jumpTimer < _jumpDelay)
+        //{
+        //    _jumpTimer += Time.fixedDeltaTime;
+        //}
 
         if (_state == PlayerState.MOVEMENT_BUFFER) {
             if (_movementBufferTimer < _movementBufferDelay)
             {
-                _movementBufferTimer += Time.deltaTime;
+                _movementBufferTimer += Time.fixedDeltaTime;
             } else
             {
                 _state = PlayerState.DEFAULT;
+                tabUp = !tabUp;
             }
         }
 
@@ -115,13 +128,18 @@ public class PlayerKinematicMotor : MonoBehaviour
         {
             if (_movementLockedTimer < _movementLockedDelay)
             {
-                _movementLockedTimer += Time.deltaTime;
+                _movementLockedTimer += Time.fixedDeltaTime;
             }
             else
             {
                 _state = PlayerState.MOVEMENT_BUFFER;
                 _movementBufferTimer = 0;
             }
+        }
+
+        if (_state == PlayerState.FLY)
+        {
+            velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
         }
     }
 
@@ -136,6 +154,28 @@ public class PlayerKinematicMotor : MonoBehaviour
         {
             _state = PlayerState.DEFAULT;
             EndRoll();
+        }
+
+        if (_state == PlayerState.DEFAULT && _fly && !tabUp)
+        {
+            _state = PlayerState.FLY;
+            StartFly();
+        }
+        if (_state == PlayerState.FLY && !_fly)
+        {
+            _state = PlayerState.DEFAULT;
+            EndFly();
+        }
+
+        if (_state == PlayerState.DEFAULT && _fly && tabUp)
+        {
+            _state = PlayerState.SHOOTING;
+            StartShooting();
+        }
+        if (_state == PlayerState.SHOOTING && !_fly)
+        {
+            _state = PlayerState.SHOOTING_BUFFER;
+            EndShooting();
         }
     }
 
@@ -160,13 +200,13 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         CheckGounded();
 
-        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.ROLL)
+        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.MOVEMENT_BUFFER || _state == PlayerState.ROLL || _state == PlayerState.FLY || _state == PlayerState.SHOOTING)
         {
             CollisionCheck(slopedDirection, out outDirection, out _, 3);
             transform.position = transform.position + outDirection;
         }
 
-        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.ROLL)
+        if (_state == PlayerState.DEFAULT || _state == PlayerState.MOVEMENT_LOCKED || _state == PlayerState.MOVEMENT_BUFFER || _state == PlayerState.ROLL || _state == PlayerState.FLY || _state == PlayerState.SHOOTING)
         {
             CollisionCheck(velocity, out outDirection, out _, 3);
             transform.position = transform.position + outDirection;
@@ -175,7 +215,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public void OnMoveInput(Vector3 direction)
     {
-        if (_state == PlayerState.DEFAULT)
+        if (_state == PlayerState.DEFAULT && _isGrounded && !(!tabUp && _fly))
         {
             float magnitude = direction.magnitude;
 
@@ -207,18 +247,110 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             _RollDirection = (rollForward * ratio) * speed * Time.fixedDeltaTime * forward;
         }
+
+        if (_state == PlayerState.FLY && !tabUp)
+        {
+            if (direction != Vector3.zero)
+            {
+                _geometry.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y));
+            } 
+
+            _direction = new Vector3(direction.x, 0.0f, direction.y).normalized * flySpeed * Time.fixedDeltaTime;
+
+            root.localRotation = Quaternion.Euler(direction.magnitude * 15.0f, 0.0f, 0.0f);
+        }
+
+        float t = 5 * Time.deltaTime;
+
+        if (_state == PlayerState.SHOOTING && tabUp)
+        {
+            _direction = Vector3.zero;
+
+            if (!_isGrounded)
+            {
+                //shoot down
+                velocity += Vector3.down * jumpForceDown * Time.fixedDeltaTime;
+                velocity.y = Mathf.Max(velocity.y, maxVelocity * Time.fixedDeltaTime);
+            }
+            else
+            {
+                if (direction != Vector3.zero)
+                {
+                    _geometry.rotation = Quaternion.Lerp(_geometry.rotation, Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y)), t);
+                }
+
+                root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.Euler(direction.magnitude * 60.0f, 0.0f, 0.0f), t);
+            }
+        }
+
+        if (_state == PlayerState.SHOOTING_BUFFER && tabUp)
+        {
+            if (direction != Vector3.zero)
+            {
+                _geometry.rotation = Quaternion.Lerp(_geometry.rotation, Quaternion.LookRotation(new Vector3(direction.x, 0.0f, direction.y)), t * 2);
+            }
+
+            root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.identity, t * 2);
+
+            if (Quaternion.Angle(root.localRotation, Quaternion.identity) < 0.1f)
+            {
+                root.localRotation = Quaternion.identity;
+                _state = PlayerState.DEFAULT;
+            }
+        }
     }
 
-    public void OnJumpInput()
+    public void OnJumpInput(bool jump)
     {
-        if (_isGrounded && _jumpTimer >= _jumpDelay)
-        {
-            velocity = Vector3.up * jumpForce * Time.deltaTime;
+        //if (_isGrounded && _jumpTimer >= _jumpDelay)
+        //{
+        //    velocity = Vector3.up * jumpForce * Time.deltaTime;
 
-            _animator.SetTrigger("Jump");
+        //    _animator.SetTrigger("Jump");
 
-            _jumpTimer = 0.0f;
-        }
+        //    _jumpTimer = 0.0f;
+        //}
+
+        //if (_state == PlayerState.DEFAULT)
+        //{
+        //    _state = PlayerState.FLY;
+        //}
+
+        _fly = jump;
+
+        //if (_fly && tabUp)
+        //{
+        //    velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
+        //} elses
+        //{
+        //    _fly = false;
+        //}
+    }
+
+    public void StartFly()
+    {
+        velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
+
+        _ps.Play();
+    }
+
+    public void EndFly()
+    {
+        //velocity = Vector3.zero;
+        root.localRotation = Quaternion.identity;
+
+        _ps.Stop();
+    }
+
+    public void StartShooting()
+    {
+        _ps.Play();
+    }
+
+    public void EndShooting()
+    {
+        //root.localRotation = Quaternion.identity;
+        _ps.Stop();
     }
 
     public void OnRollInput(bool roll)
@@ -320,7 +452,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public void CheckGounded()
     {
-        if (CollisionCheck(Vector3.down * 0.1f, out _, out RaycastHit hit, 1) && Vector3.Angle(hit.normal, Vector3.up) < _maxSlope)
+        if (CollisionCheck(Vector3.down * (0.1f - velocity.y), out _, out RaycastHit hit, 1) && Vector3.Angle(hit.normal, Vector3.up) < _maxSlope)
         {
             _groundNormal = hit.normal;
 
@@ -346,7 +478,11 @@ public class PlayerKinematicMotor : MonoBehaviour
         {
             _isGrounded = false;
 
-            velocity += Vector3.down * _gravity * Time.deltaTime;
+            if (_state != PlayerState.FLY)
+            {
+                velocity += Vector3.down * _gravity * Time.deltaTime;
+                velocity.y = Mathf.Max(velocity.y, maxVelocity * Time.fixedDeltaTime);
+            }
 
             _lastY = Mathf.Max(transform.position.y, _lastY);
 
