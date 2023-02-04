@@ -15,6 +15,7 @@ public class PlayerControllerInput : MonoBehaviour
     public void OnMove(InputValue value)
     {
         MoveInput(value.Get<Vector2>());
+        Debug.LogError("funky pineapples");
     }
 
     public void OnLook(InputValue value)
