@@ -5,22 +5,22 @@ using Cinemachine;
 
 public class OverviewVCamMovement : MonoBehaviour
 {
-    public CinemachineVirtualCamera vcam2;
+    public CinemachineVirtualCamera vcam3;
     public CinemachineTrackedDolly dolly;
     // Start is called before the first frame update
     void Start()
     {
-        dolly = vcam2.GetCinemachineComponent<CinemachineTrackedDolly>();
-        dolly.m_PathPosition = 5;
+        dolly = vcam3.GetCinemachineComponent<CinemachineTrackedDolly>();
+        dolly.m_PathPosition = 2;
     }
 
     // Update is called once per frame
     void Update()
     {
-        dolly.m_PathPosition = dolly.m_PathPosition - 10f; //set speed to 0.005  
-
+        dolly.m_PathPosition = dolly.m_PathPosition - 0.005f; //set speed to 0.005  
         if (dolly.m_PathPosition <= 0) {
-            vcam2.VirtualCameraGameObject.SetActive(false);
+            
+            vcam3.VirtualCameraGameObject.SetActive(false);
         }
     }
 }

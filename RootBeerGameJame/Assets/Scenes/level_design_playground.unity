@@ -65345,7 +65345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c672f5aac9ec34926b2571cc7658761d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vcam2: {fileID: 1565857583}
+  vcam3: {fileID: 1565857583}
   dolly: {fileID: 0}
 --- !u!1 &1565893917
 GameObject:
