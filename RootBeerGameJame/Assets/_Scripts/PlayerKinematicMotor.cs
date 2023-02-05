@@ -101,7 +101,8 @@ public class PlayerKinematicMotor : MonoBehaviour
         SHOOTING,
         SHOOTING_BUFFER,
         DEAD,
-        SPAWNING
+        SPAWNING,
+        WON
     }
 
     public PlayerState _state;
@@ -413,6 +414,24 @@ public class PlayerKinematicMotor : MonoBehaviour
                 _state = PlayerState.DEFAULT;
             }
         }
+    }
+
+    public void Win()
+    {
+        _state = PlayerState.WON;
+
+        gm.SetText("YOU WON");
+
+        deathParticles.Play();
+
+        ExplodeAudio.Play();
+
+        _ps.Stop();
+
+        shootAudio.Stop();
+        shootAudio.Stop();
+
+        _defaultCan.SetActive(false);
     }
 
     public void OnJumpInput(bool jump)

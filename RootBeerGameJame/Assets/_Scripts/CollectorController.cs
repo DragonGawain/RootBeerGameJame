@@ -47,6 +47,11 @@ public class CollectorController : MonoBehaviour
                 GetComponent<PlayerKinematicMotor>().gm.SetText($"You need {price.ToString("F2")}$ to buy ice cream");
             }
         }
+
+        if (other.gameObject.tag == "Goal")
+        {
+            GetComponent<PlayerKinematicMotor>().Win();
+        }
     }
 
     private void OnTriggerExit(Collider other)
