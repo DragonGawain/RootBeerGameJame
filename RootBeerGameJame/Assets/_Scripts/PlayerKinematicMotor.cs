@@ -76,6 +76,9 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public float maxVelocity;
 
+    public float currentMaxY;
+    public float currentMaxYDelta = 7;
+
     public enum PlayerState
     {
         DEFAULT,
@@ -142,7 +145,14 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         if (_state == PlayerState.FLY)
         {
-            velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
+            if (transform.position.y > currentMaxY)
+            {
+                velocity = Vector3.zero;
+            }
+            else
+            {
+                velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
+            }
         }
     }
 
@@ -521,6 +531,8 @@ public class PlayerKinematicMotor : MonoBehaviour
         if (CollisionCheck(Vector3.down * (0.1f - velocity.y), out _, out RaycastHit hit, 1) && Vector3.Angle(hit.normal, Vector3.up) < _maxSlope)
         {
             _groundNormal = hit.normal;
+
+            currentMaxY = hit.point.y + currentMaxYDelta;
 
             //we had a collision with the ground
             if (!_isGrounded)
