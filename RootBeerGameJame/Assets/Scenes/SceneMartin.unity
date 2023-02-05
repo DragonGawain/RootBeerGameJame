@@ -677,6 +677,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2960673711383741445, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
+      propertyPath: m_Center.y
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 7518170896934181521, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
       propertyPath: m_RootOrder
       value: 4
@@ -724,22 +728,6 @@ PrefabInstance:
     - target: {fileID: 7518170896934181522, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 7518170896934181526, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
-      propertyPath: speed
-      value: 1.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 7518170896934181526, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
-      propertyPath: maxVelocity
-      value: -10
-      objectReference: {fileID: 0}
-    - target: {fileID: 7518170896934181526, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
-      propertyPath: jumpForceDown
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7518170897333584539, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
