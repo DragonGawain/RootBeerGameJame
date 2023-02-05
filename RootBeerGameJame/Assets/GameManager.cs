@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class GameManager : MonoBehaviour
 
     public bool canStart = true;
     public bool lastJump = false;
+
+    public TMP_Text text;
 
     // Start is called before the first frame update
     void Start()
@@ -27,10 +30,17 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public void SetText(string _text)
+    {
+        text.text = _text;
+    }
+
     public void Reset()
     {
         vendingMachine.Reset();
         canStart = true;
+
+        text.text = "PRESS A";
     }
 
     public void StartGameStart()
@@ -44,6 +54,8 @@ public class GameManager : MonoBehaviour
         player.Activate(false);
 
         player.Spawn(spawn.position);
+
+        text.text = "";
     }
 
     public void StartGame()

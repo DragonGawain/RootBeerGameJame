@@ -65,11 +65,14 @@ public class PlayerController : MonoBehaviour
     {
         if (_input.look.sqrMagnitude >= _threshold || force)
         {
-            float deltaTimeMultiplier = Time.deltaTime;
-            _yaw += _input.look.x * deltaTimeMultiplier;
-            _pitch += _input.look.y * deltaTimeMultiplier;
+            if (_motor._state != PlayerKinematicMotor.PlayerState.SPAWNING)
+            {
+                float deltaTimeMultiplier = Time.deltaTime;
+                _yaw += _input.look.x * deltaTimeMultiplier;
+                _pitch += _input.look.y * deltaTimeMultiplier;
 
-            _pitch = ClampAngle(_pitch, BottomClamp, TopClamp);
+                _pitch = ClampAngle(_pitch, BottomClamp, TopClamp);
+            }
 
             _mainCameraHolder.transform.rotation = Quaternion.Euler(_pitch, _yaw, 0.0f);
         }
@@ -101,9 +104,9 @@ public class PlayerController : MonoBehaviour
     {
         _jump = _input.jump;
 
-        gm.TryStart(_jump);
-
         _motor.OnJumpInput(_jump);
+
+        gm.TryStart(_jump);
     }
 
     private void Move()

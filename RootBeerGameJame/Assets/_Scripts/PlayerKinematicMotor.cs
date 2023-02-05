@@ -108,7 +108,7 @@ public class PlayerKinematicMotor : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         _capsuleCollider = _defaultCollider;
         _isGrounded = false;
-        _state = PlayerState.DEFAULT;
+        _state = PlayerState.SPAWNING;
         _animator = GetComponent<Animator>();
 
         _jumpTimer = _jumpDelay;
@@ -174,7 +174,13 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             deathParticles.Play();
 
+            tabUp = true;
+
+            _animator.SetTrigger("Reset");
+
             _defaultCan.SetActive(false);
+
+            gm.SetText("PRESS A TO TRY AGAIN");
         }
     }
 
