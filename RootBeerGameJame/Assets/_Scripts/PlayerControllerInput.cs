@@ -46,6 +46,11 @@ public class PlayerControllerInput : MonoBehaviour
         DieInput(value.isPressed);
     }
 
+    public void OnQuit(InputValue value)
+    {
+        Application.Quit();
+    }
+
     public void MoveInput(Vector2 newMoveDirection)
     {
         move = newMoveDirection;

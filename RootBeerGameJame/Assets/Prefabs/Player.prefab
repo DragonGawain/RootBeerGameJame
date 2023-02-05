@@ -106,9 +106,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 1a765a95c2374f143b33929c9e4ce839, type: 3}
+  m_audioClip: {fileID: 8300000, guid: c4ec3d9531901934aa38ecaa23f30894, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -511,7 +511,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 1a765a95c2374f143b33929c9e4ce839, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 48ccdf0b04913ef47ba0608559260fd6, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -862,9 +862,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 1a765a95c2374f143b33929c9e4ce839, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 951b58da8e74a4947a02a0e0e4cc5802, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.2
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -1162,7 +1162,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 180b206c1990d41428b1f2f3b1dab41d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6340,7 +6340,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -876546973899608171, guid: 9f8fc09be148f3d40870751a8c337ae7, type: 3}
+  - {fileID: 2100000, guid: 180b206c1990d41428b1f2f3b1dab41d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6642,7 +6642,7 @@ MonoBehaviour:
   gm: {fileID: 0}
   CameraTarget: {fileID: 7518170897333584516}
   TopClamp: 80
-  BottomClamp: 0
+  BottomClamp: -20
   cameraDistance: -10
   layerMask:
     serializedVersion: 2
@@ -7070,7 +7070,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 180b206c1990d41428b1f2f3b1dab41d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7518,6 +7518,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 4698241777908145518, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: abbf6d7ed58586442ad7358c1bafcb41, type: 2}
     - target: {fileID: 6321357040051745222, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -7563,8 +7567,28 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: ColorModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: RotationModule.curve.scalar
+      value: 1.0384709
+      objectReference: {fileID: 0}
+    - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
       propertyPath: CollisionModule.collisionMessages
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.b
+      value: 0.4811321
+      objectReference: {fileID: 0}
+    - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.g
+      value: 0.4811321
+      objectReference: {fileID: 0}
+    - target: {fileID: 7088948189519032736, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.r
+      value: 0.4811321
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fe33079eef8af674bbe323f5ee72cfd7, type: 3}
