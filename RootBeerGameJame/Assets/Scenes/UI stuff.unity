@@ -229,6 +229,10 @@ PrefabInstance:
       propertyPath: pointsDisplay
       value: 
       objectReference: {fileID: 220772784}
+    - target: {fileID: 7437184683723650896, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
+      propertyPath: pointsDisplay
+      value: 
+      objectReference: {fileID: 220772784}
     - target: {fileID: 7518170896934181521, guid: cbe3168644aa0cf419fb0b41e4154dcb, type: 3}
       propertyPath: m_RootOrder
       value: 2
