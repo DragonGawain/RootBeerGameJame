@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MainCameraHolder
   - 25cent
+  - Door
   layers:
   - Default
   - TransparentFX
