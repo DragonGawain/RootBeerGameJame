@@ -87,6 +87,10 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public Vector3 spawnPoint;
 
+    public AudioSource walkAudio;
+    public AudioSource shootAudio;
+    public AudioSource ExplodeAudio;
+
     public enum PlayerState
     {
         DEFAULT,
@@ -148,6 +152,8 @@ public class PlayerKinematicMotor : MonoBehaviour
                 _state = PlayerState.MOVEMENT_BUFFER;
                 _direction = Vector3.zero;
                 _movementBufferTimer = 0;
+
+                walkAudio.Play();
             }
         }
 
@@ -168,19 +174,7 @@ public class PlayerKinematicMotor : MonoBehaviour
         if (healthBar.IsDead())
         {
             //explode
-            healthBar.LoseHealth(1.25f);
-
-            _state = PlayerState.DEAD;
-
-            deathParticles.Play();
-
-            tabUp = true;
-
-            _animator.SetTrigger("Reset");
-
-            _defaultCan.SetActive(false);
-
-            gm.SetText("PRESS A TO TRY AGAIN");
+            OnDieInput(true);
         }
     }
 
@@ -447,11 +441,42 @@ public class PlayerKinematicMotor : MonoBehaviour
         //}
     }
 
+    public void OnDieInput(bool die)
+    {
+        if (die && _state != PlayerState.DEAD && _state != PlayerState.SPAWNING)
+        {
+            healthBar.LoseHealth(1.25f);
+
+            _state = PlayerState.DEAD;
+
+            deathParticles.Play();
+
+            ExplodeAudio.Play();
+
+            tabUp = true;
+
+            _animator.SetTrigger("Reset");
+
+            _defaultCan.SetActive(false);
+
+            gm.SetText("PRESS A TO TRY AGAIN");
+
+            _ps.Stop();
+
+            shootAudio.Stop();
+            shootAudio.Stop();
+
+            _fly = false;
+        }
+    }
+
     public void StartFly()
     {
         velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
 
         _ps.Play();
+
+        shootAudio.Play();
     }
 
     public void EndFly()
@@ -460,17 +485,23 @@ public class PlayerKinematicMotor : MonoBehaviour
         //root.localRotation = Quaternion.identity;
 
         _ps.Stop();
+
+        shootAudio.Stop();
     }
 
     public void StartShooting()
     {
         _ps.Play();
+
+        shootAudio.Play();
     }
 
     public void EndShooting()
     {
         //root.localRotation = Quaternion.identity;
         _ps.Stop();
+
+        shootAudio.Stop();
     }
 
     public void OnRollInput(bool roll)
@@ -618,11 +649,11 @@ public class PlayerKinematicMotor : MonoBehaviour
 
                 if (_lastY - transform.position.y > 0.25f)
                 {
-                    _animator.SetTrigger("Land");
+                    //_animator.SetTrigger("Land");
                     _lastY = transform.position.y;
                 }
 
-                _animator.SetBool("Airborne", false);
+               // _animator.SetBool("Airborne", false);
             }
         }
         else
@@ -637,7 +668,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             _lastY = Mathf.Max(transform.position.y, _lastY);
 
-            _animator.SetBool("Airborne", true);
+            //_animator.SetBool("Airborne", true);
         }
 
     }

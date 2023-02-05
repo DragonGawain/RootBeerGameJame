@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviour
 
     private bool _roll;
     private bool _jump;
+    private bool _die;
 
     public float cameraDistance = -10.0f;
 
@@ -54,6 +55,7 @@ public class PlayerController : MonoBehaviour
         Jump();
         Move();
         Roll();
+        Die();
     } 
 
     private void LateUpdate()
@@ -121,6 +123,13 @@ public class PlayerController : MonoBehaviour
         _roll = _input.roll;
 
         _motor.OnRollInput(_roll);
+    }
+
+    private void Die()
+    {
+        _die = _input.die;
+
+        _motor.OnDieInput(_die);
     }
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
