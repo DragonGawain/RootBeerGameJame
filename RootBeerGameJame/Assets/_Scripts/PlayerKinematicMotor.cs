@@ -139,6 +139,7 @@ public class PlayerKinematicMotor : MonoBehaviour
             else
             {
                 _state = PlayerState.MOVEMENT_BUFFER;
+                _direction = Vector3.zero;
                 _movementBufferTimer = 0;
             }
         }
@@ -199,12 +200,12 @@ public class PlayerKinematicMotor : MonoBehaviour
             if (_RollDirection.magnitude < _direction.magnitude)
             {
                 //we are going slower
-                _direction = Vector3.Lerp(_direction, _RollDirection, 0.05f);
+                _direction = Vector3.Lerp(_direction, _RollDirection, 0.005f);
             }
             else
             {
                 //we are going faster -> dont slow down much
-                _direction = Vector3.Lerp(_direction, _RollDirection, 0.0025f);
+                _direction = Vector3.Lerp(_direction, _RollDirection, 0.05f);
             }
             //_direction = Vector3.Lerp(_direction, _RollDirection, 0.005f);
 
