@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
 
     public TMP_Text text;
 
+    public AudioSource mainMusic;
+    public AudioSource menuMusic;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -37,6 +40,9 @@ public class GameManager : MonoBehaviour
         canStart = true;
 
         text.text = "PRESS A";
+
+        mainMusic.Stop();
+        menuMusic.Play();
     }
 
     public void StartGameStart()
@@ -55,6 +61,9 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         player.Activate(true);
+
+        mainMusic.Play();
+        menuMusic.Stop();
     }
 
     public void TryStart(bool b)

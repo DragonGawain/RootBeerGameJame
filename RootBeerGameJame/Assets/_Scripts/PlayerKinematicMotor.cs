@@ -153,6 +153,7 @@ public class PlayerKinematicMotor : MonoBehaviour
                 _direction = Vector3.zero;
                 _movementBufferTimer = 0;
 
+                walkAudio.pitch = Random.Range(0.9f, 1.1f);
                 walkAudio.Play();
             }
         }
