@@ -22,6 +22,8 @@ public class RayCastParams
 
 public class PlayerKinematicMotor : MonoBehaviour
 {
+    public GameManager gm;
+
     public GameObject _dummy;
     private Rigidbody rb;
     public CapsuleCollider _capsuleCollider;
@@ -46,6 +48,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public float speed = 0.10f;
     public float flySpeed = 0.10f;
+    public float flyAngle = 45;
     public float rollSpeed;
     //public int nBounces = 3;
     public float _gravity = 9.8f;
@@ -73,11 +76,16 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public bool tabUp = true;
     public ParticleSystem _ps;
+    public ParticleSystem deathParticles;
 
     public float maxVelocity;
 
     public float currentMaxY;
     public float currentMaxYDelta = 7;
+
+    public HealthBar healthBar;
+
+    public Vector3 spawnPoint;
 
     public enum PlayerState
     {
@@ -88,6 +96,8 @@ public class PlayerKinematicMotor : MonoBehaviour
         FLY,
         SHOOTING,
         SHOOTING_BUFFER,
+        DEAD,
+        SPAWNING
     }
 
     public PlayerState _state;
@@ -98,7 +108,7 @@ public class PlayerKinematicMotor : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         _capsuleCollider = _defaultCollider;
         _isGrounded = false;
-        _state = PlayerState.DEFAULT;
+        _state = PlayerState.SPAWNING;
         _animator = GetComponent<Animator>();
 
         _jumpTimer = _jumpDelay;
@@ -107,18 +117,13 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         _geometry = transform.Find("Geometry");
 
-        _defaultCan.SetActive(true);
+        _defaultCan.SetActive(false);
         _rollingCan.SetActive(false);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        //if (_jumpTimer < _jumpDelay)
-        //{
-        //    _jumpTimer += Time.fixedDeltaTime;
-        //}
-
         if (_state == PlayerState.MOVEMENT_BUFFER) {
             if (_movementBufferTimer < _movementBufferDelay)
             {
@@ -127,6 +132,8 @@ public class PlayerKinematicMotor : MonoBehaviour
             {
                 _state = PlayerState.DEFAULT;
                 tabUp = !tabUp;
+
+                healthBar.AddHealth(0.1f);
             }
         }
 
@@ -148,12 +155,32 @@ public class PlayerKinematicMotor : MonoBehaviour
         {
             if (transform.position.y > currentMaxY)
             {
-                velocity = Vector3.zero;
+                velocity = Vector3.Lerp(velocity, Vector3.zero, 2 * Time.fixedDeltaTime);
             }
             else
             {
                 velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
             }
+
+            healthBar.LoseHealth(0.1f * Time.deltaTime);
+        }
+
+        if (healthBar.IsDead())
+        {
+            //explode
+            healthBar.LoseHealth(1.25f);
+
+            _state = PlayerState.DEAD;
+
+            deathParticles.Play();
+
+            tabUp = true;
+
+            _animator.SetTrigger("Reset");
+
+            _defaultCan.SetActive(false);
+
+            gm.SetText("PRESS A TO TRY AGAIN");
         }
     }
 
@@ -170,27 +197,69 @@ public class PlayerKinematicMotor : MonoBehaviour
             EndRoll();
         }
 
-        if (_state == PlayerState.DEFAULT && _fly && !tabUp)
+        if (_state == PlayerState.DEFAULT && _fly && !tabUp && healthBar.Alive())
         {
             _state = PlayerState.FLY;
             StartFly();
         }
-        if (_state == PlayerState.FLY && !_fly)
+        if (_state == PlayerState.FLY && (!_fly || !healthBar.Alive()))
         {
             _state = PlayerState.DEFAULT;
             EndFly();
         }
 
-        if (_state == PlayerState.DEFAULT && _fly && tabUp)
+        if (_state == PlayerState.DEFAULT && _fly && tabUp && healthBar.Alive())
         {
             _state = PlayerState.SHOOTING;
             StartShooting();
         }
-        if (_state == PlayerState.SHOOTING && !_fly)
+        if (_state == PlayerState.SHOOTING && (!_fly || !healthBar.Alive()))
         {
             _state = PlayerState.SHOOTING_BUFFER;
             EndShooting();
         }
+
+        if (_state == PlayerState.DEAD && _fly)
+        {
+            //_state = PlayerState.DEFAULT;
+            //transform.position = spawnPoint + new Vector3(0, 0.1f,0);
+
+            //_defaultCan.SetActive(true);
+            //_fly = false;
+            gm.Reset();
+
+            _state = PlayerState.SPAWNING;
+        }
+    }
+
+    public void Activate(bool b)
+    {
+        if (b)
+        {
+            _defaultCan.SetActive(true);
+
+            _state = PlayerState.DEFAULT;
+
+        }
+        else
+        {
+            _defaultCan.SetActive(false);
+        }
+    }
+
+    public void Spawn(Vector3 spawn)
+    {
+        spawnPoint = spawn;
+
+        _fly = false;
+
+        transform.position = spawnPoint + new Vector3(0, 0.3f, 0);
+
+        GetComponent<PlayerController>().Reset();
+
+        _state = PlayerState.SPAWNING;
+
+        //_defaultCan.SetActive(true);
     }
 
     private void LateUpdate()
@@ -298,7 +367,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             _direction = Vector3.Lerp(_direction, new Vector3(direction.x, 0.0f, direction.y).normalized * flySpeed * Time.fixedDeltaTime, t);
 
-            root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.Euler(direction.magnitude * 15.0f, 0.0f, 0.0f), t);
+            root.localRotation = Quaternion.Lerp(root.localRotation, Quaternion.Euler(direction.magnitude * flyAngle, 0.0f, 0.0f), t);
         }
 
         if (_state == PlayerState.DEFAULT && !_isGrounded && !tabUp)
@@ -310,6 +379,8 @@ public class PlayerKinematicMotor : MonoBehaviour
         if (_state == PlayerState.SHOOTING && tabUp)
         {
             _direction = Vector3.zero;
+
+            healthBar.LoseHealth(0.1f * Time.deltaTime);
 
             if (!_isGrounded)
             {
@@ -404,7 +475,7 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public void OnRollInput(bool roll)
     {
-        _roll = roll;
+        //_roll = roll;
     }
 
     public void RollRotation()

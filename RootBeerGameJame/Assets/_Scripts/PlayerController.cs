@@ -1,13 +1,11 @@
-//using StarterAssets;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     private PlayerControllerInput _input;
     private PlayerKinematicMotor _motor;
+
+    public GameManager gm;
     
     public GameObject CameraTarget;
     private GameObject _mainCamera;
@@ -28,6 +26,10 @@ public class PlayerController : MonoBehaviour
 
     private bool _roll;
     private bool _jump;
+
+    public float cameraDistance = -10.0f;
+
+    public LayerMask layerMask;
 
     private void Awake()
     {
@@ -56,43 +58,55 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        CameraRotation();
+        CameraRotation(0.035f);
     }
 
-    private void CameraRotation()
+    private void CameraRotation(float cameraDelay, bool force = false)
     {
-        if (_input.look.sqrMagnitude >= _threshold)
+        if (_input.look.sqrMagnitude >= _threshold || force)
         {
-            float deltaTimeMultiplier = Time.deltaTime;
-            _yaw += _input.look.x * deltaTimeMultiplier;
-            _pitch += _input.look.y * deltaTimeMultiplier;
+            if (_motor._state != PlayerKinematicMotor.PlayerState.SPAWNING)
+            {
+                float deltaTimeMultiplier = Time.deltaTime;
+                _yaw += _input.look.x * deltaTimeMultiplier;
+                _pitch += _input.look.y * deltaTimeMultiplier;
 
-            _pitch = ClampAngle(_pitch, BottomClamp, TopClamp);
+                _pitch = ClampAngle(_pitch, BottomClamp, TopClamp);
+            }
 
             _mainCameraHolder.transform.rotation = Quaternion.Euler(_pitch, _yaw, 0.0f);
         }
 
-        float cameraDistance = -10.0f;
-        //float cameraDistance = -6.0f;
-        float cameraDelay = 0.035f;
+        var distance = cameraDistance;
+
+        if (Physics.Raycast(CameraTarget.transform.position, -_mainCamera.transform.forward, out RaycastHit _hit, -cameraDistance, layerMask))
+        {
+            distance = -(_hit.distance - 0.1f);
+        }
 
         _mainCameraHolder.transform.position = CameraTarget.transform.position;
-        _mainCamera.transform.position = Vector3.Lerp(_mainCamera.transform.position, _mainCameraHolder.transform.position + (_mainCameraHolder.transform.forward * cameraDistance), cameraDelay);
+        _mainCamera.transform.position = Vector3.Lerp(_mainCamera.transform.position, _mainCameraHolder.transform.position + (_mainCameraHolder.transform.forward * distance), cameraDelay);
         _mainCamera.transform.rotation = Quaternion.Lerp(_mainCamera.transform.rotation, _mainCameraHolder.transform.rotation, cameraDelay);
 
         if (_cameraFoward)
             _cameraFoward.rotation = Quaternion.Euler(0.0f, _yaw, 0.0f);
     }
 
+    public void Reset()
+    {
+        _yaw = 0;
+        _pitch = 0;
+
+        CameraRotation(1, true);
+    }
+
     private void Jump()
     {
-        //if (_input.jump)
-        //{
-        //    _motor.OnJumpInput();
-        //}
         _jump = _input.jump;
 
         _motor.OnJumpInput(_jump);
+
+        gm.TryStart(_jump);
     }
 
     private void Move()
