@@ -30,9 +30,11 @@ public class PlayerKinematicMotor : MonoBehaviour
     private Animator _animator;
     private Transform _geometry;
     public Transform root;
+    public Transform rollingRoot;
 
     public GameObject _defaultCan;
     public GameObject _rollingCan;
+    public Transform _rollingCanTransform;
 
     private Vector3 _futurePosition;
     public Vector3 _direction;
@@ -184,7 +186,19 @@ public class PlayerKinematicMotor : MonoBehaviour
     {
         if (_state == PlayerState.ROLL)
         {
-            _direction = Vector3.Lerp(_direction, _RollDirection, 0.01f);
+            if (_RollDirection.magnitude < _direction.magnitude)
+            {
+                //we are going slower
+                _direction = Vector3.Lerp(_direction, _RollDirection, 0.05f);
+            }
+            else
+            {
+                //we are going faster -> dont slow down much
+                _direction = Vector3.Lerp(_direction, _RollDirection, 0.0025f);
+            }
+            //_direction = Vector3.Lerp(_direction, _RollDirection, 0.005f);
+
+            _rollingCanTransform.Rotate(Vector3.down * 100 * _direction.magnitude, Space.Self);
         }
 
         Vector3 outDirection;
@@ -216,6 +230,8 @@ public class PlayerKinematicMotor : MonoBehaviour
 
     public void OnMoveInput(Vector3 direction)
     {
+        float t = 5 * Time.deltaTime;
+
         if (_state == PlayerState.DEFAULT && _isGrounded && !(!tabUp && _fly))
         {
             float magnitude = direction.magnitude;
@@ -238,20 +254,29 @@ public class PlayerKinematicMotor : MonoBehaviour
 
         if (_state == PlayerState.ROLL)
         {
-            var slope = Quaternion.FromToRotation(Vector3.up, _groundNormal);
+            //Vector3 d = new Vector3(direction.x, 0.0f, direction.y).normalized * speed * Time.fixedDeltaTime;
 
-            Vector3 d = new Vector3(direction.x, 0.0f, direction.y).normalized * speed * Time.fixedDeltaTime;
+            //float ratio = (Mathf.Abs(Vector3.Angle(rollForward, d) - 90) / 90);
+            //int forward = Vector3.Distance(rollForward, d) < Vector3.Distance(rollForward, -d) ? 1 : -1;
 
-            float ratio = (Mathf.Abs(Vector3.Angle(rollForward, d) - 90) / 90);
-            int forward = Vector3.Distance(rollForward, d) < Vector3.Distance(rollForward, -d) ? 1 : -1;
+            //if (direction == Vector3.zero)
+            //    forward = 0;
 
-            if (direction == Vector3.zero)
-                forward = 0;
+            if (_isGrounded)
+            {
+                var angle = Vector3.Angle(Vector3.up, _groundNormal);
 
-            _RollDirection = (rollForward * ratio) * rollSpeed * Time.fixedDeltaTime * forward;
+                //if (downwards)
+                //{
+                _RollDirection = rollForward * rollSpeed * Time.fixedDeltaTime * angle / 90;
+                //}
+
+                RollRotation();
+            }
+
+            //_RollDirection = (rollForward * ratio) * rollSpeed * Time.fixedDeltaTime * forward;
         }
 
-        float t = 5 * Time.deltaTime;
 
         if (_state == PlayerState.FLY && !tabUp)
         {
@@ -371,6 +396,32 @@ public class PlayerKinematicMotor : MonoBehaviour
         _roll = roll;
     }
 
+    public void RollRotation()
+    {
+        //float bounceAngle = Vector3.Angle(_groundNormal, Vector3.down) - 90;
+        Vector3 downVector = Vector3.ProjectOnPlane(Vector3.down, _groundNormal);
+
+        Vector3 geometryVector = new Vector3(downVector.x, 0, downVector.z);
+
+
+        if (downVector != Vector3.zero)
+        {
+            //rollingRoot.localRotation = Quaternion.identity;
+            _geometry.rotation = Quaternion.LookRotation(geometryVector);
+        }
+        else
+        {
+            //rollingRoot.rotation = Quaternion.LookRotation(downVector);
+        }
+
+        //rollForward = rollingRoot.forward;
+        //rollForward.y = 0;
+        //rollForward.Normalize();
+
+        rollForward = _geometry.forward;
+        rollForward.Normalize();
+    }
+
     public void StartRoll()
     {
         _capsuleCollider = _rollingCollider;
@@ -378,7 +429,9 @@ public class PlayerKinematicMotor : MonoBehaviour
         _defaultCan.SetActive(false);
         _rollingCan.SetActive(true);
 
-        rollForward = _geometry.forward;
+        _RollDirection = Vector3.zero;
+
+        RollRotation(); 
     }
 
     public void EndRoll()
