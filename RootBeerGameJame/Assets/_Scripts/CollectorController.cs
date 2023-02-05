@@ -29,6 +29,7 @@ public class CollectorController : MonoBehaviour
             {
                 points += 25;
                 pointsDisplay.text = points.ToString();
+                other.GetComponentInParent<AudioSource>().Play();
                 Destroy(other.gameObject);
             }
         }
