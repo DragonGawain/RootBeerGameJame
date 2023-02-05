@@ -8,12 +8,15 @@ public class CollectorController : MonoBehaviour
     //manages points
     //checks if you collected something and does appropriate behaviour 
     [SerializeField] TMP_Text pointsDisplay;
-    private int points;
+    private float points;
+
+    public float price = 5.0f;
 
     // Start is called before the first frame update
     void Start()
     {
         points = 0;
+        pointsDisplay.text = $"{points.ToString("F2")}$";
     }
 
     // Update is called once per frame
@@ -27,11 +30,30 @@ public class CollectorController : MonoBehaviour
         {
             if(other.gameObject.tag == "25cent")
             {
-                points += 25;
-                pointsDisplay.text = points.ToString();
+                points += .25f;
+                pointsDisplay.text = $"{points.ToString("F2")}$";
                 other.GetComponentInParent<AudioSource>().Play();
                 Destroy(other.gameObject);
             }
+        }
+
+        if (other.gameObject.tag == "Door")
+        {
+            if (points >= price)
+            {
+                //open doors
+            } else
+            {
+                GetComponent<PlayerKinematicMotor>().gm.SetText($"You need {price.ToString("F2")}$ to buy ice cream");
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Door")
+        {
+            GetComponent<PlayerKinematicMotor>().gm.SetText("");
         }
     }
 }

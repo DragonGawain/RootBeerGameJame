@@ -22,12 +22,8 @@ public class GameManager : MonoBehaviour
         a = vendingMachine.GetComponent<Animator>();
         //ResetGame();
         Reset();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-
+        text.text = "L-Joystick to move\nR-Joystick to look\nA to shoot\n\nPRESS A TO CONTINUE";
     }
 
     public void SetText(string _text)
@@ -45,8 +41,6 @@ public class GameManager : MonoBehaviour
 
     public void StartGameStart()
     {
-        //disable player
-
         vendingMachine.Reset();
 
         a.SetTrigger("Start");

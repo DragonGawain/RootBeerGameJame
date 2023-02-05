@@ -8,6 +8,7 @@ public class PlayerControllerInput : MonoBehaviour
     public bool jump;
     public bool sprint;
     public bool roll;
+    public bool die;
 
     public bool cursorLocked = true;
     public bool cursorInputForLook = true;
@@ -40,6 +41,11 @@ public class PlayerControllerInput : MonoBehaviour
         RollInput(value.isPressed);
     }
 
+    public void OnDie(InputValue value)
+    {
+        DieInput(value.isPressed);
+    }
+
     public void MoveInput(Vector2 newMoveDirection)
     {
         move = newMoveDirection;
@@ -63,6 +69,11 @@ public class PlayerControllerInput : MonoBehaviour
     public void RollInput(bool newRollState)
     {
         roll = newRollState;
+    }
+
+    public void DieInput(bool newDieState)
+    {
+        die = newDieState;
     }
 
     private void OnApplicationFocus(bool hasFocus)
