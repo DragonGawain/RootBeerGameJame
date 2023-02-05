@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - MainCameraHolder
+  - 25cent
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Collectables
   - Water
   - UI
   - 
