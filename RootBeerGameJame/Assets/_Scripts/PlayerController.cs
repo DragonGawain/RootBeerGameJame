@@ -72,7 +72,7 @@ public class PlayerController : MonoBehaviour
             _mainCameraHolder.transform.rotation = Quaternion.Euler(_pitch, _yaw, 0.0f);
         }
 
-        float cameraDistance = -15.0f;
+        float cameraDistance = -10.0f;
         //float cameraDistance = -6.0f;
         float cameraDelay = 0.035f;
 
