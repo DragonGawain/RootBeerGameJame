@@ -11,15 +11,15 @@ public class OverviewVCamMovement : MonoBehaviour
     void Start()
     {
         dolly = vcam2.GetCinemachineComponent<CinemachineTrackedDolly>();
-        dolly.m_PathPosition = 0;
+        dolly.m_PathPosition = 4;
     }
 
     // Update is called once per frame
     void Update()
     {
-        dolly.m_PathPosition = dolly.m_PathPosition + 0.005f; //set speed to 0.05  
+        dolly.m_PathPosition = dolly.m_PathPosition - 0.005f; //set speed to 0.05  
 
-        if (dolly.m_PathPosition >= 2) {
+        if (dolly.m_PathPosition <= 0) {
             vcam2.VirtualCameraGameObject.SetActive(false);
         }
     }
