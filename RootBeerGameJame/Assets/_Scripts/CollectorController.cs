@@ -12,6 +12,9 @@ public class CollectorController : MonoBehaviour
 
     public float price = 5.0f;
 
+    public Transform doors;
+    bool done;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,6 +45,12 @@ public class CollectorController : MonoBehaviour
             if (points >= price)
             {
                 //open doors
+                if(!done)
+                {
+                    done = true;
+                    doors.gameObject.SetActive(false);
+                }
+
             } else
             {
                 GetComponent<PlayerKinematicMotor>().gm.SetText($"You need {price.ToString("F2")}$ to buy ice cream");
