@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
         //ResetGame();
         Reset();
 
-        text.text = "L-Joystick to move\nR-Joystick to look\nA to shoot\n\nPRESS A TO CONTINUE";
+        text.text = "WASD TO MOVE\nMOUSE TO LOOK\nSPACE TO SHOOT\n\nPRESS SPACE TO CONTINUE";
     }
 
     public void SetText(string _text)
