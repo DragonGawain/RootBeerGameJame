@@ -170,7 +170,7 @@ public class PlayerKinematicMotor : MonoBehaviour
                 velocity = Vector3.up * jumpForce * Time.fixedDeltaTime;
             }
 
-            healthBar.LoseHealth(0.1f * Time.deltaTime);
+            healthBar.LoseHealth(0.25f * Time.deltaTime);
         }
 
         if (healthBar.IsDead())
@@ -479,7 +479,8 @@ public class PlayerKinematicMotor : MonoBehaviour
 
             _defaultCan.SetActive(false);
 
-            gm.SetText("PRESS A TO TRY AGAIN");
+            //gm.SetText("PRESS A TO TRY AGAIN");
+            gm.SetText("PRESS SPACE TO TRY AGAIN");
 
             _ps.Stop();
 

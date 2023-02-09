@@ -48,7 +48,7 @@ public class CollectorController : MonoBehaviour
                 if(!done)
                 {
                     done = true;
-                    doors.gameObject.SetActive(false);
+                    doors.GetComponent<Animator>().SetTrigger("Open");
                 }
 
             } else

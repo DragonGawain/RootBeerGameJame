@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
         //ResetGame();
         Reset();
 
-        text.text = "L-Joystick to move\nR-Joystick to look\nA to shoot\n\nPRESS A TO CONTINUE";
+        //text.text = "L-Joystick to move\nR-Joystick to look\nA to shoot\n\nPRESS A TO CONTINUE";
+        text.text = "WASD to move\nMouse to look\nSpace to shoot\n\nPRESS SPACE TO CONTINUE";
     }
 
     public void SetText(string _text)
@@ -39,7 +40,8 @@ public class GameManager : MonoBehaviour
         vendingMachine.Reset();
         canStart = true;
 
-        text.text = "PRESS A";
+        //text.text = "PRESS A";
+        text.text = "PRESS SPACE";
 
         mainMusic.Stop();
         menuMusic.Play();
